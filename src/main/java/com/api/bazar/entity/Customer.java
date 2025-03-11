@@ -5,9 +5,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,6 +30,9 @@ public class Customer {
     @NotNull @NotBlank(message = "Insert a DNI")
     @Column(name = "dni", nullable = false)
     private String dni;
+    
+    @OneToMany(mappedBy = "customer")
+    private Set<Sale> sales = new HashSet<>();
 
     public Customer(String name, String lastName, String dni) {
         this.name = name;

@@ -5,11 +5,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,7 +38,10 @@ public class Product {
     @Column(name = "stock")
     @NotNull @Min(0)
     private Double stock;
-
+    
+    @ManyToMany(mappedBy = "ListProducts")
+    private Set<Sale> sales=new HashSet<>();
+    
     public Product() {
     }
 
