@@ -37,7 +37,7 @@ public class Product {
     private BigDecimal cost;
     @Column(name = "stock")
     @NotNull @Min(0)
-    private Double stock;
+    private Long stock;
     
     @ManyToMany(mappedBy = "ListProducts")
     private Set<Sale> sales=new HashSet<>();
@@ -45,10 +45,15 @@ public class Product {
     public Product() {
     }
 
-    public Product(String name, String brand, BigDecimal cost, Double stock) {
+    public Product(String name, String brand, BigDecimal cost, Long stock) {
         this.name = name;
         this.brand = brand;
         this.cost = cost;
         this.stock = stock;
     } 
+
+    @Override
+    public String toString() {
+        return "Product{" + "idProduct=" + idProduct + ", name=" + name + ", brand=" + brand + ", cost=" + cost + ", stock=" + stock + ", sales=" + sales + '}';
+    }
 }
