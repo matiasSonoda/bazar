@@ -2,6 +2,7 @@ package com.api.bazar.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,12 +35,12 @@ public class Sale {
     private BigDecimal total;
     
     @NotNull
-    @ManyToMany
+    @ManyToMany(fetch= FetchType.EAGER)
     @JoinTable(
         name = "product_sales",
         joinColumns = @JoinColumn(name="id_sale"),
         inverseJoinColumns = @JoinColumn(name="id_product"))
-    private List<Product> ListProducts = new ArrayList<>();
+    private List<Product> listProducts = new ArrayList<>();
     
     @NotNull
     @ManyToOne
@@ -50,16 +51,16 @@ public class Sale {
     public Sale() {
     }
 
-    public Sale(LocalDateTime dateSale, BigDecimal total, List<Product> ListProducts, Customer customer) {
+    public Sale(LocalDateTime dateSale, BigDecimal total, List<Product> listProducts, Customer customer) {
         this.dateSale = dateSale;
         this.total = total;
-        this.ListProducts = ListProducts;
+        this.listProducts = listProducts;
         this.customer = customer;
     }
 
     @Override
     public String toString() {
-        return "Sale{" + "idSale=" + idSale + ", dateSale=" + dateSale + ", total=" + total + ", ListProducts=" + ListProducts + ", customer=" + customer + '}';
+        return "Sale{" + "idSale=" + idSale + ", dateSale=" + dateSale + ", total=" + total + ", ListProducts=" + listProducts + ", customer=" + customer + '}';
     }
     
     

@@ -1,8 +1,11 @@
 
 package com.api.bazar.controller;
 
+import com.api.bazar.entity.Product;
 import com.api.bazar.entity.Sale;
+import com.api.bazar.entity.dto.SaleDto;
 import com.api.bazar.service.SaleService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +26,14 @@ public class SaleController {
     private SaleService saleService;
     
     @PostMapping
-    public String saveSale(@RequestBody Sale sale){
-        return "Se creo con exito la nueva venta: " +saleService.saveSale(sale).toString();
+    public String saveSale(@RequestBody SaleDto saleDto){
+        Sale sale = saleService.saveSale(saleDto);
+        
+        if (sale == null){
+            return "No se pudo crear la venta";
+        }
+        return "Se genero con exito la venta: " + sale.toString();
+  
     }
     
     @GetMapping
@@ -44,11 +53,11 @@ public class SaleController {
     }
     
     @PutMapping("/{id}")
-    public String updateSale(@PathVariable Long id, @RequestBody Sale sale){
-        if (sale.getIdSale() == null || !id.equals(sale.getIdSale())){
+    public String updateSale(@PathVariable Long id, @RequestBody SaleDto saleDto){
+        if (saleDto.getIdSale() == null || !id.equals(saleDto.getIdSale())){
             return "Credenciales incorrectas";
         }
-        Sale newSale = saleService.updateSale(sale);
+        Sale newSale = saleService.updateSale(saleDto);
         if ( newSale == null){
             return "Venta no encontrada";
         }

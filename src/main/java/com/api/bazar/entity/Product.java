@@ -38,8 +38,8 @@ public class Product {
     @Column(name = "stock")
     @NotNull @Min(0)
     private Long stock;
-    
-    @ManyToMany(mappedBy = "ListProducts")
+        
+    @ManyToMany(mappedBy = "listProducts")
     private Set<Sale> sales=new HashSet<>();
     
     public Product() {
