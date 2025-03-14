@@ -41,15 +41,16 @@ public class SaleService {
         sale.setDateSale(saleDto.getDateSale());
         
         //Agrego los productos del DTO a la lista de products si existen en la base de datos
-        products = saleDto.getListProducts().stream().map(e ->
+        products = saleDto.getProducts().stream().map(e ->
             productRepository.findById(e.getIdProduct())
                     .orElseThrow(() -> new RuntimeException("producto no encontrado" + e.getIdProduct())))
                     .collect(Collectors.toList());  
-        sale.setListProducts(products);
+        sale.setProducts(products);
         
-        //Actualizo el stock en la bdd restandolo 1 en 1 por cada producto que tenga la lista 
+        //Actualizo el stock en la bdd restandolo 1 en 1 por cada producto que tenga la lista
+
         products.stream().forEach(e -> {
-            Long stock = e.getStock() -1;
+            Long stock = e.getStock() - 1;
             if(stock < 0){
                 new RuntimeException("no hay stock de " + e.getName());
             }
@@ -58,9 +59,10 @@ public class SaleService {
         });
         
         //Calculo el valor total de la venta
-        products.forEach(e->{
-             total.add(e.getCost(), MathContext.UNLIMITED);  
+        saleDto.getProducts().forEach(e->{
+            total.add((e.getCost().multiply(new BigDecimal(e.getQuantity()))), MathContext.UNLIMITED);  
         });
+        System.out.println(total);
         sale.setTotal(total);
         
        return saleRepository.save(sale);

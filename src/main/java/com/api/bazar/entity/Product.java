@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -38,9 +39,10 @@ public class Product {
     @Column(name = "stock")
     @NotNull @Min(0)
     private Long stock;
-        
-    @ManyToMany(mappedBy = "listProducts")
-    private Set<Sale> sales=new HashSet<>();
+    
+    @OneToMany(mappedBy = "product")
+    private List<ProductSale> sales = new ArrayList<>();
+    
     
     public Product() {
     }

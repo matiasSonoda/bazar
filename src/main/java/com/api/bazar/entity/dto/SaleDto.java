@@ -18,7 +18,7 @@ public class SaleDto {
     private Long idSale;
     private LocalDateTime dateSale;
     private BigDecimal total;
-    private List<Product> listProducts = new ArrayList<>();
+    private List<ProductDto> products = new ArrayList<>();
     private Customer customer;
     
     public SaleDto() {
@@ -31,9 +31,11 @@ public class SaleDto {
         this.customer = customer;
     }
 
+   
+
     @Override
     public String toString() {
-        return "SaleDto{" + "idSale=" + idSale + ", dateSale=" + dateSale + ", total=" + total + ", listProducts=" + listProducts + ", customer=" + customer + '}';
+        return "SaleDto{" + "idSale=" + idSale + ", dateSale=" + dateSale + ", total=" + total + ", listProducts=" + products + ", customer=" + customer + '}';
     }   
 
     
