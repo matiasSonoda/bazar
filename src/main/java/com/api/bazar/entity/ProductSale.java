@@ -36,6 +36,7 @@ public class ProductSale {
         this.sale = sale;
         this.quantity = quantity;
     }
-    
+
+
     
 }

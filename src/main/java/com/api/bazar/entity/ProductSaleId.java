@@ -4,9 +4,12 @@ package com.api.bazar.entity;
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
 @Embeddable
-class ProductSaleId implements Serializable{
+@Getter @Setter
+public class ProductSaleId implements Serializable{
     private Long productId;
     private Long saleId;
 
@@ -44,5 +47,7 @@ class ProductSaleId implements Serializable{
         }
         return Objects.equals(this.saleId, other.saleId);
     }
+
+    
     
 }

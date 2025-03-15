@@ -3,11 +3,16 @@ package com.api.bazar.service;
 
 import com.api.bazar.entity.Customer;
 import com.api.bazar.entity.Product;
+import com.api.bazar.entity.ProductSale;
+import com.api.bazar.entity.ProductSaleId;
 import com.api.bazar.entity.Sale;
+import com.api.bazar.entity.dto.ProductDto;
 import com.api.bazar.entity.dto.SaleDto;
 import com.api.bazar.repository.CustomerRepository;
 import com.api.bazar.repository.ProductRepository;
+import com.api.bazar.repository.ProductSaleRepository;
 import com.api.bazar.repository.SaleRepository;
+import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
@@ -26,46 +31,82 @@ public class SaleService {
     private ProductRepository productRepository;
     @Autowired
     private CustomerRepository customerRepository;
+    @Autowired
+    private ProductSaleRepository productSaleRepository;
     
+    @Transactional
     public Sale saveSale(SaleDto saleDto){
+        System.out.println("SOY EL TOSTRING DEL SALEDTO:     " + saleDto.toString());
         //Inicio las variables
         Sale sale = new Sale();
         List<Product> products = new ArrayList<>();
+        List<ProductSale> listProdSale = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
         //Busco el cliente y si existe lo guardo en un objeto
         Customer customer = customerRepository.findById(saleDto.getCustomer().getIdCustomer())
                 .orElseThrow(() -> new RuntimeException("no se encontro el cliente"));
+        System.out.println("Soy el cliente encontrado:        " + customer.toString());
         //Agrego el cliente a la instnacia de Sale
         sale.setCustomer(customer);
         //Agrego la fecha de la venta en la instancia de Sale
         sale.setDateSale(saleDto.getDateSale());
         
         //Agrego los productos del DTO a la lista de products si existen en la base de datos
+        //Y guardo en la base de datos los productSale
+        saleDto.getProducts().stream().forEach(e -> System.out.println("SOY getProducts de saleDTO !!!! :::::   " + e.toString()));
+        
         products = saleDto.getProducts().stream().map(e ->
             productRepository.findById(e.getIdProduct())
                     .orElseThrow(() -> new RuntimeException("producto no encontrado" + e.getIdProduct())))
-                    .collect(Collectors.toList());  
-        sale.setProducts(products);
+                    .collect(Collectors.toList());
+        System.out.println("HOLAAAAA        " + products.get(0).getName());
+        products.stream().forEach(e -> System.out.println("AAAAAAAAAAAAA   Soy la lista de productos comprados:         " + e.toString()));
         
-        //Actualizo el stock en la bdd restandolo 1 en 1 por cada producto que tenga la lista
+        //Actualizo el stock en la bdd restandolo por cada producto que tenga la lista
+        products.stream().forEach(product -> {
+            ProductDto productDto = saleDto.getProducts().stream()
+                .filter(dto -> dto.getIdProduct().equals(product.getIdProduct()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No se encontró el producto en la venta: " + product.getIdProduct()));
 
-        products.stream().forEach(e -> {
-            Long stock = e.getStock() - 1;
-            if(stock < 0){
-                new RuntimeException("no hay stock de " + e.getName());
+            // Resta la cantidad del stock
+            Long stock = product.getStock() - productDto.getQuantity();
+            if (stock < 0) {
+                throw new RuntimeException("No hay suficiente stock para el producto: " + product.getName());
             }
-            e.setStock(stock);
-            productRepository.save(e);
+            product.setStock(stock); // Actualiza el stock
+            productRepository.save(product); // Guarda los cambios en la base de datos
         });
+
         
         //Calculo el valor total de la venta
-        saleDto.getProducts().forEach(e->{
-            total.add((e.getCost().multiply(new BigDecimal(e.getQuantity()))), MathContext.UNLIMITED);  
+        products.forEach(product->{
+            ProductDto prodDto = saleDto.getProducts().stream()
+                    .filter(dto -> dto.getIdProduct().equals(product.getIdProduct()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("No se encontro el producto para calcular el valor total: " + product.getIdProduct()));
+            total.add((product.getCost().multiply(new BigDecimal(prodDto.getQuantity()))), MathContext.UNLIMITED);  
         });
         System.out.println(total);
         sale.setTotal(total);
         
-       return saleRepository.save(sale);
+       Sale actualSale = saleRepository.save(sale);
+       
+       products.stream().forEach((prod) -> {ProductSale prodSale = new ProductSale();
+                                            ProductSaleId productSaleId = new ProductSaleId();
+                                            productSaleId.setProductId(prod.getIdProduct());
+                                            productSaleId.setSaleId(actualSale.getIdSale());
+                                             prodSale.setIdProductSale(productSaleId);
+                                             prodSale.setProduct(prod);
+                                             prodSale.setSale(actualSale);
+                                             saleDto.getProducts().stream().forEach((dto)-> {
+                                                if(dto.getIdProduct().equals(prod.getIdProduct()))
+                                                    prodSale.setQuantity(dto.getQuantity());
+                                                });
+                                            listProdSale.add(productSaleRepository.save(prodSale));
+                                            });
+        actualSale.setProducts(listProdSale);
+        return saleRepository.save(actualSale);
     }
     
     public List<Sale> getAllSales(){

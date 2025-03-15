@@ -1,19 +1,14 @@
 package com.api.bazar.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -38,8 +33,8 @@ public class Sale {
     private BigDecimal total;
     
     @NotNull
-    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
-    private List<Product> products = new ArrayList<>();
+    @OneToMany(mappedBy = "sale")
+    private List<ProductSale> products = new ArrayList<>();
     
     @NotNull
     @ManyToOne
@@ -50,10 +45,9 @@ public class Sale {
     public Sale() {
     }
 
-    public Sale(LocalDateTime dateSale, BigDecimal total, List<Product> products, Customer customer) {
+    public Sale(LocalDateTime dateSale, BigDecimal total,  Customer customer) {
         this.dateSale = dateSale;
         this.total = total;
-        this.products = products;
         this.customer = customer;
     }
 

@@ -12,17 +12,22 @@ public class ProductDto {
     private String name;
     private String brand;
     private BigDecimal cost;
-    private Long quantity;
+    private Integer quantity;
 
     public ProductDto() {
     }
 
-    public ProductDto(Long idProduct, String name, String brand, BigDecimal cost, Long quantity) {
+    public ProductDto(Long idProduct, String name, String brand, BigDecimal cost, Integer quantity) {
         this.idProduct = idProduct;
         this.name = name;
         this.brand = brand;
         this.cost = cost;
         this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "ProductDto{" + "idProduct=" + idProduct + ", name=" + name + ", brand=" + brand + ", cost=" + cost + ", quantity=" + quantity + '}';
     }
     
     
