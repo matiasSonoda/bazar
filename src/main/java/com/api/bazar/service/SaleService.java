@@ -41,7 +41,6 @@ public class SaleService {
         Sale sale = new Sale();
         List<Product> products = new ArrayList<>();
         List<ProductSale> listProdSale = new ArrayList<>();
-        BigDecimal total = BigDecimal.ZERO;
         //Busco el cliente y si existe lo guardo en un objeto
         Customer customer = customerRepository.findById(saleDto.getCustomer().getIdCustomer())
                 .orElseThrow(() -> new RuntimeException("no se encontro el cliente"));
@@ -80,15 +79,19 @@ public class SaleService {
 
         
         //Calculo el valor total de la venta
-        products.forEach(product->{
-            ProductDto prodDto = saleDto.getProducts().stream()
-                    .filter(dto -> dto.getIdProduct().equals(product.getIdProduct()))
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("No se encontro el producto para calcular el valor total: " + product.getIdProduct()));
-            total.add((product.getCost().multiply(new BigDecimal(prodDto.getQuantity()))), MathContext.UNLIMITED);  
-        });
-        System.out.println(total);
-        sale.setTotal(total);
+        BigDecimal totalPrice = products.stream()
+                .map(product -> {
+                    ProductDto prodDto = saleDto.getProducts().stream()
+                            .filter(dto -> dto.getIdProduct().equals(product.getIdProduct()))
+                            .findFirst()
+                            .orElseThrow(()-> new RuntimeException("No se encontro el producto para cacular el valor total: " + product.getIdProduct()));
+                
+                return product.getCost().multiply(new BigDecimal(prodDto.getQuantity()));})
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        
+        System.out.println(totalPrice);
+        sale.setTotal(totalPrice);
         
        Sale actualSale = saleRepository.save(sale);
        
