@@ -51,7 +51,6 @@ public class SaleService {
         sale.setDateSale(saleDto.getDateSale());
         
         //Agrego los productos del DTO a la lista de products si existen en la base de datos
-        //Y guardo en la base de datos los productSale
         saleDto.getProducts().stream().forEach(e -> System.out.println("SOY getProducts de saleDTO !!!! :::::   " + e.toString()));
         
         products = saleDto.getProducts().stream().map(e ->
@@ -89,7 +88,6 @@ public class SaleService {
                 return product.getCost().multiply(new BigDecimal(prodDto.getQuantity()));})
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         
-        
         System.out.println(totalPrice);
         sale.setTotal(totalPrice);
         
@@ -100,6 +98,7 @@ public class SaleService {
                                             productSaleId.setProductId(prod.getIdProduct());
                                             productSaleId.setSaleId(actualSale.getIdSale());
                                              prodSale.setIdProductSale(productSaleId);
+                                             System.out.println("ACAAAAAA AHORAAA ACAAA !!!    " +prod);
                                              prodSale.setProduct(prod);
                                              prodSale.setSale(actualSale);
                                              saleDto.getProducts().stream().forEach((dto)-> {

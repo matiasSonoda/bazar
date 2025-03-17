@@ -1,6 +1,5 @@
 package com.api.bazar.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -33,7 +32,6 @@ public class Customer {
     private String dni;
     
     @OneToMany(mappedBy = "customer")
-    @JsonManagedReference
     private Set<Sale> sales = new HashSet<>();
 
     public Customer(String name, String lastName, String dni) {
@@ -49,5 +47,4 @@ public class Customer {
     public String toString() {
         return "Customer{" + "idCustomer=" + idCustomer + ", name=" + name + ", lastName=" + lastName + ", dni=" + dni + ", sales=" + sales + '}';
     }
-    
 }

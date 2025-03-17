@@ -1,6 +1,5 @@
 package com.api.bazar.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -39,7 +38,6 @@ public class Sale {
     @NotNull
     @ManyToOne
     @JoinColumn(name="id_customer", nullable=false) 
-    @JsonBackReference
     private Customer customer;
 
     public Sale() {

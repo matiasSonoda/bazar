@@ -23,6 +23,13 @@ public class ProductSaleId implements Serializable{
     }
 
     @Override
+    public String toString() {
+        return "ProductSaleId{" + "productId=" + productId + ", saleId=" + saleId + '}';
+    }
+    
+    
+    
+    @Override
     public int hashCode() {
         int hash = 7;
         hash = 47 * hash + Objects.hashCode(this.productId);

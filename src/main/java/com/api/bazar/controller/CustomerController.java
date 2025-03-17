@@ -54,6 +54,5 @@ public class CustomerController {
             return "Se actualizo con exito el customer: " + newCustom.toString();
         }
         return "Customer inexistente";
- 
     }
 }
