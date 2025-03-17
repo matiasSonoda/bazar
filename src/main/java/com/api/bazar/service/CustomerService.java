@@ -2,6 +2,7 @@
 package com.api.bazar.service;
 
 import com.api.bazar.entity.Customer;
+import com.api.bazar.entity.dto.CustomerDto;
 import com.api.bazar.repository.CustomerRepository;
 import java.util.HashSet;
 import java.util.List;
@@ -16,8 +17,12 @@ public class CustomerService {
     @Autowired
     private CustomerRepository customerRepository;
     
-    public Customer saveCustomer(Customer customer){
-        return customerRepository.save(customer);
+    public Customer saveCustomer(CustomerDto customer){
+        Customer request = new Customer();
+        request.setDni(customer.getDni());
+        request.setName(customer.getName());
+        request.setLastName(customer.getLastName());
+        return customerRepository.save(request);
     }
     
     public List<Customer> getAllCustomer(){
@@ -32,7 +37,7 @@ public class CustomerService {
         customerRepository.deleteById(id);
     }
     
-    public Customer updateCustomer(Long id, Customer customer){
+    public Customer updateCustomer(Long id, CustomerDto customer){
         if (!customerRepository.existsById(id)){
             return null;
         }

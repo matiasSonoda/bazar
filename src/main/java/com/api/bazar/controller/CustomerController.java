@@ -1,6 +1,7 @@
 package com.api.bazar.controller;
 
 import com.api.bazar.entity.Customer;
+import com.api.bazar.entity.dto.CustomerDto;
 import com.api.bazar.service.CustomerService;
 import java.util.List;
 import java.util.Optional;
@@ -22,9 +23,18 @@ public class CustomerController {
     private CustomerService customerService;
     
     @PostMapping
-    public String saveCustomer(@RequestBody Customer customer){
-        Customer custom = customerService.saveCustomer(customer);
-        return "Se guardo con exito el nuevo customer: " + custom.toString();
+    public String saveCustomer(@RequestBody CustomerDto customer){
+        Customer request = customerService.saveCustomer(customer);
+        if(request == null){
+            return "No se pudo crear el cliente";
+        }
+        CustomerDto response = new CustomerDto();
+        response.setDni(request.getDni());
+        response.setIdCustomer(request.getIdCustomer());
+        response.setLastName(request.getLastName());
+        response.setName(request.getName());
+        
+        return "Se guardo con exito el nuevo customer: " + response.toString();
     }
     
     @GetMapping
@@ -44,7 +54,7 @@ public class CustomerController {
     }
     
     @PutMapping("/{id}")
-    public String updateCustomer(@PathVariable Long id, @RequestBody Customer customer){
+    public String updateCustomer(@PathVariable Long id, @RequestBody CustomerDto customer){
         if(customer.getIdCustomer() == null || !id.equals(customer.getIdCustomer())){
             return "Credenciales incorrectas";
         }
