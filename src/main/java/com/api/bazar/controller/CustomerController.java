@@ -54,14 +54,19 @@ public class CustomerController {
     }
     
     @PutMapping("/{id}")
-    public String updateCustomer(@PathVariable Long id, @RequestBody CustomerDto customer){
-        if(customer.getIdCustomer() == null || !id.equals(customer.getIdCustomer())){
+    public String updateCustomer(@PathVariable Long id, @RequestBody CustomerDto request){
+        if(request.getIdCustomer() == null || !id.equals(request.getIdCustomer())){
             return "Credenciales incorrectas";
         }
-        Customer newCustom =  customerService.updateCustomer(id, customer);
+        Customer auxiliar =  customerService.updateCustomer(id, request);
         
-        if (newCustom != null){
-            return "Se actualizo con exito el customer: " + newCustom.toString();
+        if (auxiliar != null){
+            CustomerDto response = new CustomerDto();
+            response.setIdCustomer(auxiliar.getIdCustomer());
+            response.setDni(auxiliar.getDni());
+            response.setName(auxiliar.getName());
+            response.setLastName(auxiliar.getLastName());
+            return "Se actualizo con exito el customer: " + response.toString();
         }
         return "Customer inexistente";
     }
