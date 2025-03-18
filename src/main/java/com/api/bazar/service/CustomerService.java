@@ -4,10 +4,12 @@ package com.api.bazar.service;
 import com.api.bazar.entity.Customer;
 import com.api.bazar.entity.dto.CustomerDto;
 import com.api.bazar.repository.CustomerRepository;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +27,20 @@ public class CustomerService {
         return customerRepository.save(request);
     }
     
-    public List<Customer> getAllCustomer(){
-       return customerRepository.findAll();
+    public List<CustomerDto> getAllCustomer(){
+       List<Customer> customers = customerRepository.findAll();
+       List<CustomerDto> dto = new ArrayList<>();
+       
+       dto = customers.stream().map((custom)->{
+                CustomerDto aux = new CustomerDto();
+                aux.setDni(custom.getDni());
+                aux.setIdCustomer(custom.getIdCustomer());
+                aux.setName(custom.getName());
+                aux.setLastName(custom.getLastName());
+                return aux;
+       }).collect(Collectors.toList());
+       
+       return dto;
     }
     
     public Optional<Customer> getCustomer(Long id){

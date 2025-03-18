@@ -38,7 +38,7 @@ public class CustomerController {
     }
     
     @GetMapping
-    public List<Customer> getAllCustomer(){
+    public List<CustomerDto> getAllCustomer(){
         return customerService.getAllCustomer();
     }
     
