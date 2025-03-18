@@ -19,12 +19,18 @@ public class CustomerService {
     @Autowired
     private CustomerRepository customerRepository;
     
-    public Customer saveCustomer(CustomerDto customer){
+    public CustomerDto saveCustomer(CustomerDto dto){
         Customer request = new Customer();
-        request.setDni(customer.getDni());
-        request.setName(customer.getName());
-        request.setLastName(customer.getLastName());
-        return customerRepository.save(request);
+        request.setDni(dto.getDni());
+        request.setName(dto.getName());
+        request.setLastName(dto.getLastName());
+        Customer aux = customerRepository.save(request);
+        CustomerDto response = new CustomerDto();
+        response.setIdCustomer(aux.getIdCustomer());
+        response.setDni(aux.getDni());
+        response.setName(aux.getName());
+        response.setLastName(aux.getLastName());
+        return response;
     }
     
     public List<CustomerDto> getAllCustomer(){
@@ -43,15 +49,29 @@ public class CustomerService {
        return dto;
     }
     
-    public Optional<Customer> getCustomer(Long id){
-        return customerRepository.findById(id);
+    public CustomerDto getCustomer(Long id){
+        Optional<Customer> customer = customerRepository.findById(id);
+        
+        if(customer.isPresent()){
+            CustomerDto dto = new CustomerDto();
+            dto.setIdCustomer(customer.get().getIdCustomer());
+            dto.setDni(customer.get().getDni());
+            dto.setName(customer.get().getName());
+            dto.setLastName(customer.get().getLastName());
+            return dto;
+        }
+        return null;
     }
     
-    public void deleteCustomer(Long id){
+    public String deleteCustomer(Long id){
+        if(!customerRepository.existsById(id)){
+            return "No existe el cliente que quiere eliminar";
+        }
         customerRepository.deleteById(id);
+        return "Se elimino con exito";
     }
     
-    public Customer updateCustomer(Long id, CustomerDto customer){
+    public CustomerDto updateCustomer(Long id, CustomerDto customer){
         if (!customerRepository.existsById(id)){
             return null;
         }

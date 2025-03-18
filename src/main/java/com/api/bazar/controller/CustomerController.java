@@ -24,16 +24,10 @@ public class CustomerController {
     
     @PostMapping
     public String saveCustomer(@RequestBody CustomerDto customer){
-        Customer request = customerService.saveCustomer(customer);
-        if(request == null){
+        CustomerDto response = customerService.saveCustomer(customer);
+        if(response == null){
             return "No se pudo crear el cliente";
         }
-        CustomerDto response = new CustomerDto();
-        response.setDni(request.getDni());
-        response.setIdCustomer(request.getIdCustomer());
-        response.setLastName(request.getLastName());
-        response.setName(request.getName());
-        
         return "Se guardo con exito el nuevo customer: " + response.toString();
     }
     
@@ -43,14 +37,17 @@ public class CustomerController {
     }
     
     @GetMapping("/{id}")
-    public Optional<Customer> getCustomer(@PathVariable Long id){
-        return customerService.getCustomer(id);
+    public String getCustomer(@PathVariable Long id){
+        CustomerDto response = customerService.getCustomer(id);
+        if(response == null){
+            return "No se encontro el cliente con el id: " + id;
+        }
+        return "Cliente encontrado: " + response.toString();
     }
     
     @DeleteMapping("/{id}")
     public String deleteCustomer(@PathVariable Long id){
-        customerService.deleteCustomer(id);
-        return "Customer eliminado con exito";
+        return customerService.deleteCustomer(id);
     }
     
     @PutMapping("/{id}")
@@ -58,14 +55,8 @@ public class CustomerController {
         if(request.getIdCustomer() == null || !id.equals(request.getIdCustomer())){
             return "Credenciales incorrectas";
         }
-        Customer auxiliar =  customerService.updateCustomer(id, request);
-        
-        if (auxiliar != null){
-            CustomerDto response = new CustomerDto();
-            response.setIdCustomer(auxiliar.getIdCustomer());
-            response.setDni(auxiliar.getDni());
-            response.setName(auxiliar.getName());
-            response.setLastName(auxiliar.getLastName());
+        CustomerDto response =  customerService.updateCustomer(id, request);
+        if (response != null){
             return "Se actualizo con exito el customer: " + response.toString();
         }
         return "Customer inexistente";
