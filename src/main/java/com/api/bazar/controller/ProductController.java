@@ -2,6 +2,7 @@
 package com.api.bazar.controller;
 
 import com.api.bazar.entity.Product;
+import com.api.bazar.entity.dto.ProductDto;
 import com.api.bazar.service.ProductService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -24,38 +25,48 @@ public class ProductController {
     private ProductService productService;
 
     @PostMapping
-    public String createProduct(@RequestBody @Valid Product product){
-        Product prod = productService.createProduct(product);
-        
-        return "Se creo exitosamente el product "+ prod.toString();
+    public String createProduct(@RequestBody ProductDto product){
+        ProductDto response = productService.createProduct(product);
+        if (response == null){
+            return "No se pudo crear el producto";
+        }
+        return "Se creo exitosamente el product "+ response.toString();
     }
     
     @GetMapping
-    public List<Product> getAllProducts(){
-        return productService.getAllProducts();
+    public List<ProductDto> getAllProducts(){
+        List<ProductDto> response = productService.getAllProducts();
+        if (response.isEmpty()){
+            return null;
+        }
+        return response;
     }
     
     @GetMapping("/{id}")
-    public Optional<Product> getProduct(@PathVariable Long id){
-        return productService.getProduct(id);
+    public String getProduct(@PathVariable Long id){
+        ProductDto response = productService.getProduct(id);
+        if(response == null){
+            return "Producto no  encontrado: " + id;
+        }
+        return "Producto encontrado " + response;
     }
     
     @DeleteMapping("/{id}")
     public String deleteProduct(@PathVariable Long id) {
-       productService.deleteProduct(id);
-       return "Producto eliminado con exito";
+       String response = productService.deleteProduct(id);
+       return response;
     }
     
     @PutMapping("/{id}")
-    public String updateProduct(@PathVariable Long id ,@RequestBody Product product){
-        if(product.getIdProduct() == null || !id.equals(product.getIdProduct())){
+    public String updateProduct(@PathVariable Long id ,@RequestBody ProductDto request){
+        if(request.getIdProduct() == null || !id.equals(request.getIdProduct())){
             return "Credenciales incorrectas";
         }
-        Product prod =productService.updateProduct(product);
-        if (prod == null){
+        ProductDto response =productService.updateProduct(request);
+        if (response == null){
             return "No se encontro el producto";
         }
-        return "Se actualizo con exito: " + prod.toString();
+        return "Se actualizo con exito: " + response.toString();
     }
     
 }
