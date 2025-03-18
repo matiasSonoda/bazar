@@ -6,6 +6,7 @@ import com.api.bazar.entity.Product;
 import com.api.bazar.entity.ProductSale;
 import com.api.bazar.entity.ProductSaleId;
 import com.api.bazar.entity.Sale;
+import com.api.bazar.entity.dto.CustomerDto;
 import com.api.bazar.entity.dto.ProductDto;
 import com.api.bazar.entity.dto.SaleDto;
 import com.api.bazar.repository.CustomerRepository;
@@ -111,12 +112,75 @@ public class SaleService {
         return saleRepository.save(actualSale);
     }
     
-    public List<Sale> getAllSales(){
-        return saleRepository.findAll();
+    public List<SaleDto> getAllSales(){
+        List<Sale> sales = saleRepository.findAll();
+        if (sales.isEmpty()){
+            return null;
+        }
+        List<SaleDto> response = sales.stream().map((sale)->{
+            SaleDto aux = new SaleDto();
+            
+            CustomerDto customer = new CustomerDto();
+            customer.setIdCustomer(sale.getCustomer().getIdCustomer());
+            customer.setDni(sale.getCustomer().getDni());
+            customer.setName(sale.getCustomer().getName());
+            customer.setLastName(sale.getCustomer().getLastName());
+            
+            List<ProductDto> products = sale.getProducts().stream().map((product)->{
+                ProductDto dto = new ProductDto();
+                dto.setIdProduct(product.getProduct().getIdProduct());
+                dto.setName(product.getProduct().getName());
+                dto.setCost(product.getProduct().getCost());
+                dto.setBrand(product.getProduct().getBrand());
+                dto.setQuantity(product.getQuantity());
+                return dto;
+            }).collect(Collectors.toList());
+            
+            aux.setIdSale(sale.getIdSale());
+            aux.setCustomer(customer);
+            aux.setDateSale(sale.getDateSale());
+            aux.setProducts(products);
+            aux.setTotal(sale.getTotal());
+            return aux;
+        }).collect(Collectors.toList());
+    
+        return response;
     }
     
-    public Optional<Sale> getSale(Long id){
-        return saleRepository.findById(id);
+    public SaleDto getSale(Long id){
+        if(saleRepository.existsById(id)){
+            Optional<Sale> sale = saleRepository.findById(id);
+            if(sale.isEmpty()){
+                return null;
+            }
+            SaleDto response = new SaleDto();
+
+            CustomerDto customer = new CustomerDto();
+            customer.setIdCustomer(sale.get().getCustomer().getIdCustomer());
+            customer.setDni(sale.get().getCustomer().getDni());
+            customer.setName(sale.get().getCustomer().getName());
+            customer.setLastName(sale.get().getCustomer().getLastName());
+
+            List<ProductDto> products = sale.get().getProducts().stream().map((product)->{
+                    ProductDto dto = new ProductDto();
+                    dto.setIdProduct(product.getProduct().getIdProduct());
+                    dto.setName(product.getProduct().getName());
+                    dto.setCost(product.getProduct().getCost());
+                    dto.setBrand(product.getProduct().getBrand());
+                    dto.setQuantity(product.getQuantity());
+                    return dto;
+                }).collect(Collectors.toList());
+
+            response.setIdSale(sale.get().getIdSale());
+            response.setCustomer(customer);
+            response.setDateSale(sale.get().getDateSale());
+            response.setProducts(products);
+            response.setTotal(sale.get().getTotal());
+            
+            return response;
+                
+        }
+        return null;
     }
     
     public void deleteSale(Long id){

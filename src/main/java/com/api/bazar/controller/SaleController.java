@@ -64,13 +64,21 @@ public class SaleController {
     }
     
     @GetMapping
-    public List<Sale> getAllSales(){
-        return saleService.getAllSales();
+    public List<SaleDto> getAllSales(){
+        List<SaleDto> response = saleService.getAllSales();
+        if(response.isEmpty()){
+            return null;
+        }
+        return response;
     }
     
     @GetMapping("/{id}")
-    public Optional<Sale> getSale(@PathVariable Long id) {
-        return saleService.getSale(id);
+    public SaleDto getSale(@PathVariable Long id) {
+        SaleDto response = saleService.getSale(id);
+        if (response == null){
+            return null;
+        }
+        return response;
     }
     
     @DeleteMapping("/{id}")
