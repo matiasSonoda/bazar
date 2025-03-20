@@ -25,17 +25,14 @@ public class Sale {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idSale;
-    @NotNull @PastOrPresent
+
     private LocalDateTime dateSale;
     
-    @NotNull @Min(0)
     private BigDecimal total;
     
-    @NotNull
     @OneToMany(mappedBy = "sale")
     private List<ProductSale> products = new ArrayList<>();
     
-    @NotNull
     @ManyToOne
     @JoinColumn(name="id_customer", nullable=false) 
     private Customer customer;

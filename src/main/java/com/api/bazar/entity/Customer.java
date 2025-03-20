@@ -21,13 +21,10 @@ public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idCustomer;
-    @NotNull @NotBlank(message = "Insert a name")
     @Column(name = "name", nullable = false)
     private String name;
-    @NotNull @NotBlank(message = "Insert a last name")
     @Column(name = "last_name", nullable = false)
     private String lastName;
-    @NotNull @NotBlank(message = "Insert a DNI")
     @Column(name = "dni", nullable = false)
     private String dni;
     

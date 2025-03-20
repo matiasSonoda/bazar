@@ -182,7 +182,7 @@ public class SaleService {
         }
         return null;
     }
-    
+        
     public void deleteSale(Long id){
         saleRepository.deleteById(id);
     }

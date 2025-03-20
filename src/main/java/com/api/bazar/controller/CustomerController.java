@@ -6,6 +6,7 @@ import com.api.bazar.service.CustomerService;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,12 +24,12 @@ public class CustomerController {
     private CustomerService customerService;
     
     @PostMapping
-    public String saveCustomer(@RequestBody CustomerDto customer){
+    public ResponseEntity<CustomerDto> saveCustomer(@RequestBody CustomerDto customer){
         CustomerDto response = customerService.saveCustomer(customer);
         if(response == null){
-            return "No se pudo crear el cliente";
+            return ResponseEntity.badRequest().body(response);
         }
-        return "Se guardo con exito el nuevo customer: " + response.toString();
+        return ResponseEntity.ok(response);
     }
     
     @GetMapping

@@ -25,16 +25,12 @@ public class Product {
     @Column(name = "id_product")
     private Long idProduct;
     @Column(name = "name", nullable = false)
-    @NotNull @NotBlank(message = "Insert a name")
     private String name;
     @Column(name = "brand", nullable = false)
-    @NotNull @NotBlank(message = "Insert a brand")
     private String brand;
     @Column(name = "cost", nullable = false)
-    @NotNull @Min(0)
     private BigDecimal cost;
     @Column(name = "stock")
-    @NotNull @Min(0)
     private Long stock;
     
     @OneToMany(mappedBy = "product")

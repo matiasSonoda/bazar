@@ -92,10 +92,10 @@ public class SaleController {
         if (saleDto.getIdSale() == null || !id.equals(saleDto.getIdSale())){
             return "Credenciales incorrectas";
         }
-        Sale newSale = saleService.updateSale(saleDto);
-        if ( newSale == null){
+        Sale response = saleService.updateSale(saleDto);
+        if ( response == null){
             return "Venta no encontrada";
         }
-        return "Venta actualizada con exito: " + newSale.toString();
+        return "Venta actualizada con exito: " + response.toString();
     }
 }

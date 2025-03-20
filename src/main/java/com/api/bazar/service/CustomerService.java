@@ -21,10 +21,13 @@ public class CustomerService {
     
     public CustomerDto saveCustomer(CustomerDto dto){
         Customer request = new Customer();
-        request.setDni(dto.getDni());
+        request.setDni(dto.getDni() );
         request.setName(dto.getName());
         request.setLastName(dto.getLastName());
         Customer aux = customerRepository.save(request);
+        if (aux == null){
+            return null;
+        }
         CustomerDto response = new CustomerDto();
         response.setIdCustomer(aux.getIdCustomer());
         response.setDni(aux.getDni());

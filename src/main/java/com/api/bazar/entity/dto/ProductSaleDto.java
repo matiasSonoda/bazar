@@ -1,6 +1,9 @@
 
 package com.api.bazar.entity.dto;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,9 +14,9 @@ public class ProductSaleDto {
 
     private ProductDto product;
     
-
     private SaleDto sale;
-    
+    @Positive(message = "the quantity must be positive")
+    @NotNull @Min(0)
     private Integer quantity;
 
     public ProductSaleDto() {
