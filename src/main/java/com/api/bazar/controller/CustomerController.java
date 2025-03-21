@@ -3,6 +3,7 @@ package com.api.bazar.controller;
 import com.api.bazar.entity.Customer;
 import com.api.bazar.entity.dto.CustomerDto;
 import com.api.bazar.service.CustomerService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,42 +25,30 @@ public class CustomerController {
     private CustomerService customerService;
     
     @PostMapping
-    public ResponseEntity<CustomerDto> saveCustomer(@RequestBody CustomerDto customer){
+    public ResponseEntity<CustomerDto> saveCustomer(@RequestBody @Valid CustomerDto customer){
         CustomerDto response = customerService.saveCustomer(customer);
-        if(response == null){
-            return ResponseEntity.badRequest().body(response);
-        }
         return ResponseEntity.ok(response);
     }
     
     @GetMapping
-    public List<CustomerDto> getAllCustomer(){
-        return customerService.getAllCustomer();
+    public ResponseEntity<List<CustomerDto>> getAllCustomer(){
+        return ResponseEntity.ok(customerService.getAllCustomer());
     }
     
     @GetMapping("/{id}")
-    public String getCustomer(@PathVariable Long id){
-        CustomerDto response = customerService.getCustomer(id);
-        if(response == null){
-            return "No se encontro el cliente con el id: " + id;
-        }
-        return "Cliente encontrado: " + response.toString();
+    public ResponseEntity<CustomerDto> getCustomer(@PathVariable Long id){
+        return ResponseEntity.ok(customerService.getCustomer(id));
     }
     
     @DeleteMapping("/{id}")
-    public String deleteCustomer(@PathVariable Long id){
-        return customerService.deleteCustomer(id);
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id){
+        customerService.deleteCustomer(id);
+        return ResponseEntity.noContent().build();
     }
     
     @PutMapping("/{id}")
-    public String updateCustomer(@PathVariable Long id, @RequestBody CustomerDto request){
-        if(request.getIdCustomer() == null || !id.equals(request.getIdCustomer())){
-            return "Credenciales incorrectas";
-        }
+    public ResponseEntity<CustomerDto> updateCustomer(@PathVariable Long id, @RequestBody @Valid CustomerDto request){
         CustomerDto response =  customerService.updateCustomer(id, request);
-        if (response != null){
-            return "Se actualizo con exito el customer: " + response.toString();
-        }
-        return "Customer inexistente";
+        return ResponseEntity.ok(response);
     }
 }

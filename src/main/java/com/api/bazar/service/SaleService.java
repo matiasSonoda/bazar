@@ -9,6 +9,7 @@ import com.api.bazar.entity.Sale;
 import com.api.bazar.entity.dto.CustomerDto;
 import com.api.bazar.entity.dto.ProductDto;
 import com.api.bazar.entity.dto.SaleDto;
+import com.api.bazar.exception.CustomerNotFoundException;
 import com.api.bazar.repository.CustomerRepository;
 import com.api.bazar.repository.ProductRepository;
 import com.api.bazar.repository.ProductSaleRepository;
@@ -44,7 +45,7 @@ public class SaleService {
         List<ProductSale> listProdSale = new ArrayList<>();
         //Busco el cliente y si existe lo guardo en un objeto
         Customer customer = customerRepository.findById(saleDto.getCustomer().getIdCustomer())
-                .orElseThrow(() -> new RuntimeException("no se encontro el cliente"));
+                .orElseThrow(() -> new CustomerNotFoundException("no se encontro el cliente"));
         System.out.println("Soy el cliente encontrado:        " + customer.toString());
         //Agrego el cliente a la instnacia de Sale
         sale.setCustomer(customer);

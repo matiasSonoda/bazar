@@ -3,6 +3,8 @@ package com.api.bazar.service;
 
 import com.api.bazar.entity.Customer;
 import com.api.bazar.entity.dto.CustomerDto;
+import com.api.bazar.exception.CustomerNotFoundException;
+import com.api.bazar.exception.DuplicateResourceException;
 import com.api.bazar.repository.CustomerRepository;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,14 +22,14 @@ public class CustomerService {
     private CustomerRepository customerRepository;
     
     public CustomerDto saveCustomer(CustomerDto dto){
+        if (customerRepository.existByDni(dto.getDni())){
+            throw new IllegalArgumentException("the DNI already exists");
+        }
         Customer request = new Customer();
         request.setDni(dto.getDni() );
         request.setName(dto.getName());
         request.setLastName(dto.getLastName());
         Customer aux = customerRepository.save(request);
-        if (aux == null){
-            return null;
-        }
         CustomerDto response = new CustomerDto();
         response.setIdCustomer(aux.getIdCustomer());
         response.setDni(aux.getDni());
@@ -41,6 +43,9 @@ public class CustomerService {
        List<CustomerDto> dto = new ArrayList<>();
        
        dto = customers.stream().map((custom)->{
+                if(custom.getDni() == null || custom.getLastName() == null || custom.getName() == null || custom.getSales() == null){
+                    throw new RuntimeException("Missing fields in customer with ID" + custom.getIdCustomer());
+                }
                 CustomerDto aux = new CustomerDto();
                 aux.setDni(custom.getDni());
                 aux.setIdCustomer(custom.getIdCustomer());
@@ -53,31 +58,32 @@ public class CustomerService {
     }
     
     public CustomerDto getCustomer(Long id){
-        Optional<Customer> customer = customerRepository.findById(id);
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(()->new CustomerNotFoundException());
         
-        if(customer.isPresent()){
             CustomerDto dto = new CustomerDto();
-            dto.setIdCustomer(customer.get().getIdCustomer());
-            dto.setDni(customer.get().getDni());
-            dto.setName(customer.get().getName());
-            dto.setLastName(customer.get().getLastName());
+            dto.setIdCustomer(customer.getIdCustomer());
+            dto.setDni(customer.getDni());
+            dto.setName(customer.getName());
+            dto.setLastName(customer.getLastName());
             return dto;
-        }
-        return null;
+        
     }
     
-    public String deleteCustomer(Long id){
+    public void deleteCustomer(Long id){
         if(!customerRepository.existsById(id)){
-            return "No existe el cliente que quiere eliminar";
+            throw new CustomerNotFoundException();
         }
         customerRepository.deleteById(id);
-        return "Se elimino con exito";
     }
     
-    public CustomerDto updateCustomer(Long id, CustomerDto customer){
-        if (!customerRepository.existsById(id)){
-            return null;
+    public CustomerDto updateCustomer(Long id, CustomerDto request){
+        if(request.getIdCustomer() == null || !id.equals(request.getIdCustomer())){
+            throw new IllegalArgumentException("Invalid credentials");
         }
-        return saveCustomer(customer);
+        if (!customerRepository.existsById(id)){
+            throw new CustomerNotFoundException();
+        }
+        return saveCustomer(request);
     }
 }
