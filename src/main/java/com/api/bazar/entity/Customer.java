@@ -25,7 +25,7 @@ public class Customer {
     private String name;
     @Column(name = "last_name", nullable = false)
     private String lastName;
-    @Column(name = "dni", nullable = false)
+    @Column(name = "dni", nullable = false, unique = true)
     private String dni;
     
     @OneToMany(mappedBy = "customer")

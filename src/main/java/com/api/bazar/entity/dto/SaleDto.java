@@ -25,7 +25,9 @@ public class SaleDto {
     private LocalDateTime dateSale = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
     @NotNull @Min(0) @Positive(message = "The total must be positive")
     private BigDecimal total;
+    
     private List<ProductDto> products = new ArrayList<>();
+    
     private CustomerDto customer;
     
     public SaleDto() {

@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,13 +31,8 @@ public class SaleController {
     private SaleService saleService;
     
     @PostMapping
-    public String saveSale(@RequestBody SaleDto saleDto){
-        Sale sale = saleService.saveSale(saleDto);
-        
-        if (sale == null){
-            return "No se pudo crear la venta";
-        }
-        
+    public ResponseEntity<SaleDto> saveSale(@RequestBody SaleDto saleDto){
+        Sale sale = saleService.saveSale(saleDto);  
         CustomerDto customerDto = new CustomerDto();
         customerDto.setDni(sale.getCustomer().getDni());
         customerDto.setIdCustomer(sale.getCustomer().getIdCustomer());
@@ -59,43 +56,53 @@ public class SaleController {
             response.getProducts().add(productDto);
         });
         
-        return "Se genero con exito la venta: " + response.toString();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
   
     }
     
     @GetMapping
-    public List<SaleDto> getAllSales(){
+    public ResponseEntity<List<SaleDto>> getAllSales(){
         List<SaleDto> response = saleService.getAllSales();
-        if(response.isEmpty()){
-            return null;
-        }
-        return response;
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
     @GetMapping("/{id}")
-    public SaleDto getSale(@PathVariable Long id) {
+    public ResponseEntity<SaleDto> getSale(@PathVariable Long id) {
         SaleDto response = saleService.getSale(id);
-        if (response == null){
-            return null;
-        }
-        return response;
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
     @DeleteMapping("/{id}")
-    public String deleteSale(@PathVariable Long id){
+    public ResponseEntity<Void> deleteSale(@PathVariable Long id){
         saleService.deleteSale(id);
-        return "Se elimino con exito la venta";
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
     
     @PutMapping("/{id}")
-    public String updateSale(@PathVariable Long id, @RequestBody SaleDto saleDto){
-        if (saleDto.getIdSale() == null || !id.equals(saleDto.getIdSale())){
-            return "Credenciales incorrectas";
-        }
-        Sale response = saleService.updateSale(saleDto);
-        if ( response == null){
-            return "Venta no encontrada";
-        }
-        return "Venta actualizada con exito: " + response.toString();
+    public ResponseEntity<SaleDto> updateSale(@PathVariable Long id, @RequestBody SaleDto saleDto){
+        Sale sale = saleService.updateSale(id,saleDto);
+        CustomerDto customerDto = new CustomerDto();
+        customerDto.setDni(sale.getCustomer().getDni());
+        customerDto.setIdCustomer(sale.getCustomer().getIdCustomer());
+        customerDto.setName(sale.getCustomer().getName());
+        customerDto.setLastName(sale.getCustomer().getLastName());
+        
+        SaleDto response = new SaleDto();
+        response.setCustomer(customerDto);
+        response.setIdSale(sale.getIdSale());
+        response.setDateSale(sale.getDateSale());
+        response.setTotal(sale.getTotal());
+        
+        sale.getProducts().stream().forEach((product)->{
+            ProductDto productDto = new ProductDto();
+            productDto.setBrand(product.getProduct().getBrand());
+            productDto.setCost(product.getProduct().getCost());
+            productDto.setIdProduct(product.getProduct().getIdProduct());
+            productDto.setName(product.getProduct().getName());
+            productDto.setQuantity(product.getQuantity());        
+            
+            response.getProducts().add(productDto);
+        });
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

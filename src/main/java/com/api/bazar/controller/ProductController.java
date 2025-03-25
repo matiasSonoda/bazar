@@ -8,6 +8,9 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,48 +28,33 @@ public class ProductController {
     private ProductService productService;
 
     @PostMapping
-    public String createProduct(@RequestBody ProductDto product){
+    public ResponseEntity<ProductDto> createProduct(@RequestBody @Valid ProductDto product){
         ProductDto response = productService.createProduct(product);
-        if (response == null){
-            return "No se pudo crear el producto";
-        }
-        return "Se creo exitosamente el product "+ response.toString();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
     @GetMapping
-    public List<ProductDto> getAllProducts(){
+    public ResponseEntity<List<ProductDto>> getAllProducts(){
         List<ProductDto> response = productService.getAllProducts();
-        if (response.isEmpty()){
-            return null;
-        }
-        return response;
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
     @GetMapping("/{id}")
-    public String getProduct(@PathVariable Long id){
+    public ResponseEntity<ProductDto> getProduct(@PathVariable Long id){
         ProductDto response = productService.getProduct(id);
-        if(response == null){
-            return "Producto no  encontrado: " + id;
-        }
-        return "Producto encontrado " + response;
+        return ResponseEntity.status(HttpStatus.FOUND).body(response);
     }
     
     @DeleteMapping("/{id}")
-    public String deleteProduct(@PathVariable Long id) {
-       String response = productService.deleteProduct(id);
-       return response;
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+       productService.deleteProduct(id);
+       return ResponseEntity.status(HttpStatus.OK).build();
     }
     
     @PutMapping("/{id}")
-    public String updateProduct(@PathVariable Long id ,@RequestBody ProductDto request){
-        if(request.getIdProduct() == null || !id.equals(request.getIdProduct())){
-            return "Credenciales incorrectas";
-        }
-        ProductDto response =productService.updateProduct(request);
-        if (response == null){
-            return "No se encontro el producto";
-        }
-        return "Se actualizo con exito: " + response.toString();
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id ,@RequestBody @Valid ProductDto request){
+        ProductDto response =productService.updateProduct(id,request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
 }

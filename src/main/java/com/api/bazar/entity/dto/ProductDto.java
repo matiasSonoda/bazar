@@ -27,7 +27,6 @@ public class ProductDto {
     @NotNull @Min(0)
     private Long stock;
     @Positive(message="The quantity must be positive")
-    @NotNull @Min(0)
     private Integer quantity;
 
     public ProductDto() {

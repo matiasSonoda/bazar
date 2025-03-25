@@ -22,10 +22,10 @@ public class CustomerService {
     private CustomerRepository customerRepository;
     
     public CustomerDto saveCustomer(CustomerDto dto){
-        if (customerRepository.existByDni(dto.getDni())){
-            throw new IllegalArgumentException("the DNI already exists");
-        }
         Customer request = new Customer();
+        if (dto.getIdCustomer() != null){
+            request.setIdCustomer(dto.getIdCustomer());
+        }
         request.setDni(dto.getDni() );
         request.setName(dto.getName());
         request.setLastName(dto.getLastName());

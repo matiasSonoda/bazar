@@ -10,6 +10,9 @@ import com.api.bazar.entity.dto.CustomerDto;
 import com.api.bazar.entity.dto.ProductDto;
 import com.api.bazar.entity.dto.SaleDto;
 import com.api.bazar.exception.CustomerNotFoundException;
+import com.api.bazar.exception.EmptyStockException;
+import com.api.bazar.exception.ProductNotFoundException;
+import com.api.bazar.exception.SaleNotFoundException;
 import com.api.bazar.repository.CustomerRepository;
 import com.api.bazar.repository.ProductRepository;
 import com.api.bazar.repository.ProductSaleRepository;
@@ -38,45 +41,36 @@ public class SaleService {
     
     @Transactional
     public Sale saveSale(SaleDto saleDto){
-        System.out.println("SOY EL TOSTRING DEL SALEDTO:     " + saleDto.toString());
-        //Inicio las variables
+        //Declaracion de las variables
         Sale sale = new Sale();
         List<Product> products = new ArrayList<>();
         List<ProductSale> listProdSale = new ArrayList<>();
+        //Valida si el dto ya tiene id, eso significa que viene por parte de una solicitud PUT
+        if(saleDto.getIdSale() != null){
+            sale.setIdSale(saleDto.getIdSale());
+        }
         //Busco el cliente y si existe lo guardo en un objeto
+        
         Customer customer = customerRepository.findById(saleDto.getCustomer().getIdCustomer())
                 .orElseThrow(() -> new CustomerNotFoundException("no se encontro el cliente"));
-        System.out.println("Soy el cliente encontrado:        " + customer.toString());
-        //Agrego el cliente a la instnacia de Sale
+        //Agrego el cliente a la instancia de Sale
         sale.setCustomer(customer);
         //Agrego la fecha de la venta en la instancia de Sale
         sale.setDateSale(saleDto.getDateSale());
         
-        //Agrego los productos del DTO a la lista de products si existen en la base de datos
-        saleDto.getProducts().stream().forEach(e -> System.out.println("SOY getProducts de saleDTO !!!! :::::   " + e.toString()));
-        
-        products = saleDto.getProducts().stream().map(e ->
-            productRepository.findById(e.getIdProduct())
-                    .orElseThrow(() -> new RuntimeException("producto no encontrado" + e.getIdProduct())))
+        //Agrego los productos del DTO a la lista de products si existen en la base de datos        
+        products = saleDto.getProducts().stream().map(e ->{
+            Product prod = productRepository.findById(e.getIdProduct())
+                    .orElseThrow(() -> new ProductNotFoundException("producto no encontrado" + e.getIdProduct()));
+                    //Actualizo el stock en la bdd restandolo por cada producto que tenga la lista
+                    if (prod.getStock() < 0){
+                        throw new EmptyStockException("No hay suficiente stock para vender el producto: " + prod.getIdProduct());
+                    }
+                    prod.setStock(prod.getStock() - e.getQuantity());
+                   
+                    productRepository.save(prod);
+                    return prod;})
                     .collect(Collectors.toList());
-        System.out.println("HOLAAAAA        " + products.get(0).getName());
-        products.stream().forEach(e -> System.out.println("AAAAAAAAAAAAA   Soy la lista de productos comprados:         " + e.toString()));
-        
-        //Actualizo el stock en la bdd restandolo por cada producto que tenga la lista
-        products.stream().forEach(product -> {
-            ProductDto productDto = saleDto.getProducts().stream()
-                .filter(dto -> dto.getIdProduct().equals(product.getIdProduct()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No se encontró el producto en la venta: " + product.getIdProduct()));
-
-            // Resta la cantidad del stock
-            Long stock = product.getStock() - productDto.getQuantity();
-            if (stock < 0) {
-                throw new RuntimeException("No hay suficiente stock para el producto: " + product.getName());
-            }
-            product.setStock(stock); // Actualiza el stock
-            productRepository.save(product); // Guarda los cambios en la base de datos
-        });
 
         
         //Calculo el valor total de la venta
@@ -85,28 +79,29 @@ public class SaleService {
                     ProductDto prodDto = saleDto.getProducts().stream()
                             .filter(dto -> dto.getIdProduct().equals(product.getIdProduct()))
                             .findFirst()
-                            .orElseThrow(()-> new RuntimeException("No se encontro el producto para cacular el valor total: " + product.getIdProduct()));
+                            .orElseThrow(()-> new ProductNotFoundException("No se encontro el producto para cacular el valor total: " + product.getIdProduct()));
                 
                 return product.getCost().multiply(new BigDecimal(prodDto.getQuantity()));})
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        System.out.println(totalPrice);
         sale.setTotal(totalPrice);
         
-       Sale actualSale = saleRepository.save(sale);
+        Sale actualSale = saleRepository.save(sale);
        
-       products.stream().forEach((prod) -> {ProductSale prodSale = new ProductSale();
-                                            ProductSaleId productSaleId = new ProductSaleId();
-                                            productSaleId.setProductId(prod.getIdProduct());
-                                            productSaleId.setSaleId(actualSale.getIdSale());
+        products.stream().forEach((prod) -> {ProductSale prodSale = new ProductSale();
+                                             ProductSaleId productSaleId = new ProductSaleId();
+                                             productSaleId.setProductId(prod.getIdProduct());
+                                             productSaleId.setSaleId(actualSale.getIdSale());
                                              prodSale.setIdProductSale(productSaleId);
-                                             System.out.println("ACAAAAAA AHORAAA ACAAA !!!    " +prod);
                                              prodSale.setProduct(prod);
                                              prodSale.setSale(actualSale);
-                                             saleDto.getProducts().stream().forEach((dto)-> {
-                                                if(dto.getIdProduct().equals(prod.getIdProduct()))
-                                                    prodSale.setQuantity(dto.getQuantity());
-                                                });
+                                             saleDto.getProducts().stream().filter(dto -> dto.getIdProduct().equals(prod.getIdProduct()))
+                                                    .findFirst()
+                                                    .ifPresent(dto -> {
+                                                        if (dto.getQuantity() == null || dto.getQuantity() < 0){
+                                                            throw new IllegalArgumentException("Valores invalidos para la cantidad del producto: " + dto.getIdProduct());
+                                                        }
+                                                    prodSale.setQuantity(dto.getQuantity());}
+                                            );
                                             listProdSale.add(productSaleRepository.save(prodSale));
                                             });
         actualSale.setProducts(listProdSale);
@@ -115,9 +110,6 @@ public class SaleService {
     
     public List<SaleDto> getAllSales(){
         List<Sale> sales = saleRepository.findAll();
-        if (sales.isEmpty()){
-            return null;
-        }
         List<SaleDto> response = sales.stream().map((sale)->{
             SaleDto aux = new SaleDto();
             
@@ -149,11 +141,10 @@ public class SaleService {
     }
     
     public SaleDto getSale(Long id){
-        if(saleRepository.existsById(id)){
-            Optional<Sale> sale = saleRepository.findById(id);
-            if(sale.isEmpty()){
-                return null;
-            }
+        if(!saleRepository.existsById(id)){
+            throw new SaleNotFoundException("No se encontro la venta solicitada: " + id);
+        }
+        Optional<Sale> sale = saleRepository.findById(id);
             SaleDto response = new SaleDto();
 
             CustomerDto customer = new CustomerDto();
@@ -179,18 +170,21 @@ public class SaleService {
             response.setTotal(sale.get().getTotal());
             
             return response;
-                
-        }
-        return null;
     }
         
     public void deleteSale(Long id){
+        if (!saleRepository.existsById(id)){
+            throw new SaleNotFoundException("No se encontro la venta para borrarla: " + id);
+        }
         saleRepository.deleteById(id);
     }
     
-    public Sale updateSale(SaleDto saleDto){
+    public Sale updateSale(Long id, SaleDto saleDto){
         if(!saleRepository.existsById(saleDto.getIdSale())){
-            return null;
+            throw new SaleNotFoundException("No se encontro la venta para actualizarla: " + saleDto.getIdSale());
+        }
+        if (saleDto.getIdSale() == null || !id.equals(saleDto.getIdSale())){
+            throw new IllegalArgumentException("Credenciales inalidas para actualizar la venta");
         }
         return saveSale(saleDto);
     }

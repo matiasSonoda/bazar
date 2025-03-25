@@ -3,6 +3,7 @@ package com.api.bazar.service;
 
 import com.api.bazar.entity.Product;
 import com.api.bazar.entity.dto.ProductDto;
+import com.api.bazar.exception.ProductNotFoundException;
 import com.api.bazar.repository.ProductRepository;
 import java.util.List;
 import java.util.Optional;
@@ -23,9 +24,6 @@ public class ProductService {
         product.setCost(request.getCost());
         product.setStock(request.getStock());
         Product aux = productRepository.save(product);
-        if (aux == null){
-            return null;
-        }
         ProductDto response = new ProductDto();
         response.setIdProduct(aux.getIdProduct());
         response.setName(aux.getName());
@@ -51,36 +49,32 @@ public class ProductService {
     }
     
     public ProductDto getProduct(Long id){
-        Optional<Product> product = productRepository.findById(id);
-        if (product.isEmpty()){
-            return null;
-        }
+        Product product = productRepository.findById(id)
+                .orElseThrow(()-> new ProductNotFoundException());
         ProductDto response = new ProductDto();
-        response.setIdProduct(product.get().getIdProduct());
-        response.setName(product.get().getName());
-        response.setBrand(product.get().getBrand());
-        response.setCost(product.get().getCost());
-        response.setStock(product.get().getStock());
+        response.setIdProduct(product.getIdProduct());
+        response.setName(product.getName());
+        response.setBrand(product.getBrand());
+        response.setCost(product.getCost());
+        response.setStock(product.getStock());
         return response;
     }
     
-    public String deleteProduct(Long id){
-        if (productRepository.existsById(id)){
-            productRepository.deleteById(id);
-            return "Se elimino con exito el producto";
+    public void deleteProduct(Long id){
+        if (!productRepository.existsById(id)){
+           throw new ProductNotFoundException("The product you are trying to remove was not found: " + id);
         }
-        return "El producto que quiere eliminar no existe: " + id;
+        productRepository.deleteById(id);
     }
     
-    public ProductDto updateProduct(ProductDto request){
+    public ProductDto updateProduct(Long id, ProductDto request){
+        if(request.getIdProduct() == null || !id.equals(request.getIdProduct())){
+            throw new IllegalArgumentException("Invalid credentials");
+        }
         if(!productRepository.existsById(request.getIdProduct())){
-            return null;
+             throw new ProductNotFoundException("The product you are trying to remove was not found" + request.getIdProduct());
         }
-        ProductDto response = createProduct(request);
-        if(response == null){
-            return null;
-        }
-        return response;
+        return createProduct(request);   
     }
     
 }
