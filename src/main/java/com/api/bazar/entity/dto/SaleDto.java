@@ -23,8 +23,8 @@ public class SaleDto {
     private Long idSale;
     @NotNull @PastOrPresent
     private LocalDateTime dateSale = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
-    @NotNull @Min(0) @Positive(message = "The total must be positive")
-    private BigDecimal total;
+    @NotNull
+    private BigDecimal total = BigDecimal.ZERO;
     
     private List<ProductDto> products = new ArrayList<>();
     
@@ -46,6 +46,44 @@ public class SaleDto {
     public String toString() {
         return "SaleDto{" + "idSale=" + idSale + ", dateSale=" + dateSale + ", total=" + total + ", listProducts=" + products + ", customer=" + customer + '}';
     }   
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 71 * hash + Objects.hashCode(this.idSale);
+        hash = 71 * hash + Objects.hashCode(this.dateSale);
+        hash = 71 * hash + Objects.hashCode(this.total);
+        hash = 71 * hash + Objects.hashCode(this.products);
+        hash = 71 * hash + Objects.hashCode(this.customer);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SaleDto other = (SaleDto) obj;
+        if (!Objects.equals(this.idSale, other.idSale)) {
+            return false;
+        }
+        if (!Objects.equals(this.dateSale, other.dateSale)) {
+            return false;
+        }
+        if (!Objects.equals(this.total, other.total)) {
+            return false;
+        }
+        if (!Objects.equals(this.products, other.products)) {
+            return false;
+        }
+        return Objects.equals(this.customer, other.customer);
+    }
 
     
     

@@ -1,17 +1,13 @@
 
 package com.api.bazar.controller;
 
-import com.api.bazar.entity.Product;
 import com.api.bazar.entity.Sale;
 import com.api.bazar.entity.dto.SaleDto;
 import com.api.bazar.entity.dto.CustomerDto;
 import com.api.bazar.entity.dto.ProductDto;
 import com.api.bazar.service.SaleService;
-import java.util.ArrayList;
+import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 @RestController
 @RequestMapping("/api/sale")
 public class SaleController {
@@ -31,7 +28,7 @@ public class SaleController {
     private SaleService saleService;
     
     @PostMapping
-    public ResponseEntity<SaleDto> saveSale(@RequestBody SaleDto saleDto){
+    public ResponseEntity<SaleDto> saveSale(@RequestBody @Valid SaleDto saleDto){
         Sale sale = saleService.saveSale(saleDto);  
         CustomerDto customerDto = new CustomerDto();
         customerDto.setDni(sale.getCustomer().getDni());
@@ -79,7 +76,7 @@ public class SaleController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<SaleDto> updateSale(@PathVariable Long id, @RequestBody SaleDto saleDto){
+    public ResponseEntity<SaleDto> updateSale(@PathVariable Long id, @Valid @RequestBody SaleDto saleDto){
         Sale sale = saleService.updateSale(id,saleDto);
         CustomerDto customerDto = new CustomerDto();
         customerDto.setDni(sale.getCustomer().getDni());

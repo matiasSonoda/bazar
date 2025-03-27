@@ -26,6 +26,9 @@ public class CustomerService {
         if (dto.getIdCustomer() != null){
             request.setIdCustomer(dto.getIdCustomer());
         }
+        if(customerRepository.existsByDni(dto.getDni())){
+            throw new DuplicateResourceException("The DNI already exists"); 
+        }
         request.setDni(dto.getDni() );
         request.setName(dto.getName());
         request.setLastName(dto.getLastName());

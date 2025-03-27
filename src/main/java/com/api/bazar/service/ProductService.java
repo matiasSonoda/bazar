@@ -19,6 +19,9 @@ public class ProductService {
     
     public ProductDto createProduct(ProductDto request){
         Product product = new Product();
+        if(request.getIdProduct() !=  null){
+            product.setIdProduct(request.getIdProduct());
+        }
         product.setBrand(request.getBrand());
         product.setName(request.getName());
         product.setCost(request.getCost());

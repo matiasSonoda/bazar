@@ -1,5 +1,6 @@
 package com.api.bazar.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,9 +29,9 @@ public class Sale {
 
     private LocalDateTime dateSale;
     
-    private BigDecimal total;
+    private BigDecimal total = BigDecimal.ZERO;
     
-    @OneToMany(mappedBy = "sale")
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductSale> products = new ArrayList<>();
     
     @ManyToOne

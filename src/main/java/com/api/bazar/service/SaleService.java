@@ -4,22 +4,19 @@ package com.api.bazar.service;
 import com.api.bazar.entity.Customer;
 import com.api.bazar.entity.Product;
 import com.api.bazar.entity.ProductSale;
-import com.api.bazar.entity.ProductSaleId;
 import com.api.bazar.entity.Sale;
 import com.api.bazar.entity.dto.CustomerDto;
 import com.api.bazar.entity.dto.ProductDto;
 import com.api.bazar.entity.dto.SaleDto;
 import com.api.bazar.exception.CustomerNotFoundException;
-import com.api.bazar.exception.EmptyStockException;
-import com.api.bazar.exception.ProductNotFoundException;
 import com.api.bazar.exception.SaleNotFoundException;
 import com.api.bazar.repository.CustomerRepository;
 import com.api.bazar.repository.ProductRepository;
 import com.api.bazar.repository.ProductSaleRepository;
 import com.api.bazar.repository.SaleRepository;
+import com.api.bazar.utils.SaleUtils;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,11 +35,19 @@ public class SaleService {
     private CustomerRepository customerRepository;
     @Autowired
     private ProductSaleRepository productSaleRepository;
+    @Autowired
+    private SaleUtils saleUtils;
     
     @Transactional
     public Sale saveSale(SaleDto saleDto){
         //Declaracion de las variables
-        Sale sale = new Sale();
+        Sale sale;
+        if(saleDto.getIdSale() != null){
+            sale = saleRepository.findById(saleDto.getIdSale())
+                    .orElseThrow(() -> new SaleNotFoundException("No se encontro la venta correspondiente: " + saleDto.getIdSale()));
+        }else{
+            sale = new Sale();
+        }
         List<Product> products = new ArrayList<>();
         List<ProductSale> listProdSale = new ArrayList<>();
         //Valida si el dto ya tiene id, eso significa que viene por parte de una solicitud PUT
@@ -58,53 +63,34 @@ public class SaleService {
         //Agrego la fecha de la venta en la instancia de Sale
         sale.setDateSale(saleDto.getDateSale());
         
-        //Agrego los productos del DTO a la lista de products si existen en la base de datos        
-        products = saleDto.getProducts().stream().map(e ->{
-            Product prod = productRepository.findById(e.getIdProduct())
-                    .orElseThrow(() -> new ProductNotFoundException("producto no encontrado" + e.getIdProduct()));
-                    //Actualizo el stock en la bdd restandolo por cada producto que tenga la lista
-                    if (prod.getStock() < 0){
-                        throw new EmptyStockException("No hay suficiente stock para vender el producto: " + prod.getIdProduct());
-                    }
-                    prod.setStock(prod.getStock() - e.getQuantity());
-                   
-                    productRepository.save(prod);
-                    return prod;})
-                    .collect(Collectors.toList());
-
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        //                                                                                       //
+        //   AGREGO LOS PRODUCTOS DEL DTO A LA LISTA DE PRODUCTS SI EXISTEN EN LA BASE DE DATOS  //
+        //   AGREGO LOS PRODUCTOS DEL DTO A LA LISTA DE PRODUCTS SI EXISTEN EN LA BASE DE DATOS  //
+        //                                                                                       //
+        ///////////////////////////////////////////////////////////////////////////////////////////       
+        products = saleUtils.addProducts(saleDto, sale);
         
-        //Calculo el valor total de la venta
-        BigDecimal totalPrice = products.stream()
-                .map(product -> {
-                    ProductDto prodDto = saleDto.getProducts().stream()
-                            .filter(dto -> dto.getIdProduct().equals(product.getIdProduct()))
-                            .findFirst()
-                            .orElseThrow(()-> new ProductNotFoundException("No se encontro el producto para cacular el valor total: " + product.getIdProduct()));
-                
-                return product.getCost().multiply(new BigDecimal(prodDto.getQuantity()));})
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        //////////////////////////////////////////////////////////////
+        //                                                          //
+        //          CALCULO EL VALOR TOTAL DE LA VENTA              //
+        //          CALCULO EL VALOR TOTAL DE LA VENTA              //
+        //                                                          //
+        //////////////////////////////////////////////////////////////
+        BigDecimal totalPrice = saleUtils.totalPrice(products, saleDto);
+        
         sale.setTotal(totalPrice);
         
         Sale actualSale = saleRepository.save(sale);
        
-        products.stream().forEach((prod) -> {ProductSale prodSale = new ProductSale();
-                                             ProductSaleId productSaleId = new ProductSaleId();
-                                             productSaleId.setProductId(prod.getIdProduct());
-                                             productSaleId.setSaleId(actualSale.getIdSale());
-                                             prodSale.setIdProductSale(productSaleId);
-                                             prodSale.setProduct(prod);
-                                             prodSale.setSale(actualSale);
-                                             saleDto.getProducts().stream().filter(dto -> dto.getIdProduct().equals(prod.getIdProduct()))
-                                                    .findFirst()
-                                                    .ifPresent(dto -> {
-                                                        if (dto.getQuantity() == null || dto.getQuantity() < 0){
-                                                            throw new IllegalArgumentException("Valores invalidos para la cantidad del producto: " + dto.getIdProduct());
-                                                        }
-                                                    prodSale.setQuantity(dto.getQuantity());}
-                                            );
-                                            listProdSale.add(productSaleRepository.save(prodSale));
-                                            });
-        actualSale.setProducts(listProdSale);
+        ///////////////////////////////////////////////////////////////
+        //                                                           //
+        //    AGREGO LA LISTA DE PRODUCTSALE A LA INSTANCIA DE SALE  //
+        //    AGREGO LA LISTA DE PRODUCTSALE A LA INSTANCIA DE SALE  //
+        //                                                           //
+        ///////////////////////////////////////////////////////////////
+        saleUtils.buildProductSale(products, listProdSale, actualSale, saleDto);
+        
         return saleRepository.save(actualSale);
     }
     
@@ -180,12 +166,14 @@ public class SaleService {
     }
     
     public Sale updateSale(Long id, SaleDto saleDto){
-        if(!saleRepository.existsById(saleDto.getIdSale())){
+        if (!saleRepository.existsById(id)){
             throw new SaleNotFoundException("No se encontro la venta para actualizarla: " + saleDto.getIdSale());
         }
+                
         if (saleDto.getIdSale() == null || !id.equals(saleDto.getIdSale())){
             throw new IllegalArgumentException("Credenciales inalidas para actualizar la venta");
         }
+        
         return saveSale(saleDto);
     }
 }
