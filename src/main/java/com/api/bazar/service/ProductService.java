@@ -63,6 +63,22 @@ public class ProductService {
         return response;
     }
     
+    public List<ProductDto> getLowStock(){
+        List<Product> products = productRepository.findAll();
+        List<ProductDto> response = products.stream()
+                                        .filter(predicate -> predicate.getStock() <= 5)
+                                        .map(action -> {
+                                                              ProductDto dto = new ProductDto();
+                                                              dto.setIdProduct(action.getIdProduct());
+                                                              dto.setName(action.getName());
+                                                              dto.setBrand(action.getBrand());
+                                                              dto.setCost(action.getCost());
+                                                              dto.setStock(action.getStock());
+                                                              return dto;})
+                                        .collect(Collectors.toList());
+        return response;
+    }
+    
     public void deleteProduct(Long id){
         if (!productRepository.existsById(id)){
            throw new ProductNotFoundException("The product you are trying to remove was not found: " + id);

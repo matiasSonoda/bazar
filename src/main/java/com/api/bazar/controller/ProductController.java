@@ -45,6 +45,12 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.FOUND).body(response);
     }
     
+    @GetMapping("/low_stock")
+    public ResponseEntity<List<ProductDto>> getLowStock(){
+        List<ProductDto> products = productService.getLowStock();
+        return ResponseEntity.status(HttpStatus.OK).body(products);
+    }
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
        productService.deleteProduct(id);

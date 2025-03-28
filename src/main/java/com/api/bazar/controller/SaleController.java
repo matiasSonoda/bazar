@@ -69,6 +69,12 @@ public class SaleController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     
+    @GetMapping("/product/{id}")
+    public ResponseEntity<List<ProductDto>> getProductsSale(@PathVariable Long id){
+        List<ProductDto> response = saleService.getProductsSale(id);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSale(@PathVariable Long id){
         saleService.deleteSale(id);

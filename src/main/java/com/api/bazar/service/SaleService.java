@@ -157,6 +157,13 @@ public class SaleService {
             
             return response;
     }
+    
+    public List<ProductDto> getProductsSale(Long id){
+        SaleDto dto = getSale(id);
+        List<ProductDto> response = new ArrayList<>();
+        response.addAll(dto.getProducts());
+        return response;
+    }
         
     public void deleteSale(Long id){
         if (!saleRepository.existsById(id)){

@@ -79,6 +79,9 @@ public class SaleUtils {
             actualSale.getProducts().clear();
             listProdSale.forEach(actualSale.getProducts()::add);
         }
+        else{
+            listProdSale.forEach(actualSale.getProducts()::add);
+        }
         
     }
 }
