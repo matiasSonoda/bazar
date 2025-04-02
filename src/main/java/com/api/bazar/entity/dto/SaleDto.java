@@ -26,6 +26,8 @@ public class SaleDto {
     @NotNull
     private BigDecimal total = BigDecimal.ZERO;
     
+    private Integer totalSales = 0;
+    
     private List<ProductDto> products = new ArrayList<>();
     
     private CustomerDto customer;

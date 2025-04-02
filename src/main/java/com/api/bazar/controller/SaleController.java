@@ -4,9 +4,13 @@ package com.api.bazar.controller;
 import com.api.bazar.entity.Sale;
 import com.api.bazar.entity.dto.SaleDto;
 import com.api.bazar.entity.dto.CustomerDto;
+import com.api.bazar.entity.dto.HighestSaleDetailsDto;
 import com.api.bazar.entity.dto.ProductDto;
 import com.api.bazar.service.SaleService;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -72,6 +76,19 @@ public class SaleController {
     @GetMapping("/product/{id}")
     public ResponseEntity<List<ProductDto>> getProductsSale(@PathVariable Long id){
         List<ProductDto> response = saleService.getProductsSale(id);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
+    @GetMapping("/date/{date}")
+    public ResponseEntity<SaleDto> getTotalSales(@PathVariable("date") LocalDate date){
+        
+        SaleDto response = saleService.getTotalSales(date);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
+    @GetMapping("/highestSale")
+    public ResponseEntity<HighestSaleDetailsDto> getHighestSaleDetails(){
+        HighestSaleDetailsDto response = saleService.getHighestSaleDetails();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     

@@ -17,12 +17,17 @@ import com.api.bazar.repository.SaleRepository;
 import com.api.bazar.utils.SaleUtils;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.api.bazar.entity.dto.HighestSaleDetailsDto;
+import java.util.Comparator;
 
 @Service
 public class SaleService {
@@ -165,6 +170,44 @@ public class SaleService {
         return response;
     }
         
+    public SaleDto getTotalSales(LocalDate date){
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.atTime(LocalTime.MAX);
+        List<Sale> sales = saleRepository.findByDateSaleBetween(start, end);
+        return sales.stream()
+                .reduce(new SaleDto(), 
+                        (dto, saleItem)->{
+                            BigDecimal totalPrice = dto.getTotal().add(saleItem.getTotal());
+                            dto.setTotal(totalPrice);
+                            dto.setTotalSales(dto.getTotalSales() + 1);
+                            return dto;}
+                        , (dto1,dto2) ->{
+                            dto1.setTotal(dto1.getTotal().add(dto2.getTotal()));
+                            dto1.setTotalSales(dto1.getTotalSales() + dto2.getTotalSales());
+                            return dto1;}
+                );
+    }
+    
+    public HighestSaleDetailsDto getHighestSaleDetails(){
+        List<Sale> request = saleRepository.findAll();
+        if(request.isEmpty()){
+            throw new RuntimeException("Lista de ventas vacia en: getHighestSaleDetails");
+        }
+        Sale highestSale = request.stream()
+                .max(Comparator.comparing(Sale::getTotal))
+                .orElseThrow();
+        
+       HighestSaleDetailsDto response = new HighestSaleDetailsDto();
+                    response.setIdSale(highestSale.getIdSale());
+                    response.setName(highestSale.getCustomer().getName());
+                    response.setLastName(highestSale.getCustomer().getLastName());
+                    response.setTotal(highestSale.getTotal());
+                    int quantity = highestSale.getProducts().stream().mapToInt(product-> product.getQuantity()).sum();
+                    response.setProductsQuantity(quantity);
+                
+        return response;
+    }
+    
     public void deleteSale(Long id){
         if (!saleRepository.existsById(id)){
             throw new SaleNotFoundException("No se encontro la venta para borrarla: " + id);
